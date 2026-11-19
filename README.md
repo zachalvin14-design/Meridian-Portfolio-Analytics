@@ -15,15 +15,13 @@ python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
 ```
 
-**Prediction lock:** Before opening the application or running the full suite, personally complete the AI-off prediction and push and verify its commit on GitHub. The default stress dashboard and one test solve the exact locked setting. Follow [the locked record](docs/LOCKED_CHANGED_INPUT.md).
-
-After the lock is confirmed, launch the app from the repository root.
+Launch the app from the repository root.
 
 ```bash
 .venv/bin/python -m streamlit run app.py
 ```
 
-Open the local URL printed by Streamlit. The app requires no API credentials or market data downloads. See [the cold run instructions](docs/COLD_RUN.md) for clean-checkout verification.
+Open the local URL printed by Streamlit. The app requires no API credentials or market data downloads. See the [clean-clone validation](docs/COLD_RUN.md) for the verified environment and launch results.
 
 ## Investment mandate
 
@@ -38,15 +36,15 @@ Minimize modeled annual volatility subject to long-only weights, full investment
 
 ## Automated tests
 
-After the prediction lock is confirmed, run the complete suite.
+Run the complete suite from the repository root.
 
 ```bash
 .venv/bin/python -m pytest -q
 ```
 
-For a pre-lock check that omits the test covering the locked setting, use the command in [COLD_RUN.md](docs/COLD_RUN.md). See [validation and AI use](docs/validation-and-ai-use.md) for actual test results and [the decision memo](docs/decision-memo.md) for the stop decision.
+The full suite passed all 29 tests in a fresh clone of the published results commit. See [validation and AI use](docs/validation-and-ai-use.md) for the evidence and [the decision memo](docs/decision-memo.md) for the stop decision.
 
 ## Submission records
 
-- [Locked changed-input record](docs/LOCKED_CHANGED_INPUT.md)
+- [Locked changed-input record](docs/LOCKED_CHANGED_INPUT.md) records the published 3%-to-10% Treasury reserve experiment. The prediction was AI-assisted, so the independently authored AI-off requirement remains unmet.
 - [Submission manifest](docs/submission-manifest.md)
