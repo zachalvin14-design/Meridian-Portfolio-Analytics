@@ -87,35 +87,32 @@ This prediction is AI-assisted and must not be represented as an independently a
 
 ### 6. Actual Experiment Results
 
-**Status:** Not yet recorded.
+**Status:** Completed after remote verification of the prediction commit.
 
-The following fields must be completed using actual application output after the prediction has been committed.
+**Verified prediction commit:** `484c36ddc85147c15130136491c730ab3d731486` was the exact SHA of both local `main` and GitHub's `refs/heads/main` before the run.
 
-**Treasury bills allocation:** Pending
+The two runs used the Lab 13 inputs from `app.py` and the same `analytics.optimize` and mandate-checking functions as the app. The expected-return target stayed at 6.5% with no signal adjustment. Only the active Treasury reserve floor changed. The comparison was run directly through the shared solver, with no stress suite.
 
-**Treasury 10-year note allocation:** Pending
+| Metric | Original (3% floor) | Changed (10% floor) | Change |
+|---|---:|---:|---:|
+| Treasury bills | 0.0000% | 0.0000% | 0.0000 pp |
+| Treasury 10-year note | 3.0000% | 10.0000% | +7.0000 pp |
+| Investment-grade bonds | 46.3000% | 37.6667% | −8.6333 pp |
+| Global equity | 50.7000% | 52.3333% | +1.6333 pp |
+| Expected annual return | 6.5000% | 6.5000% | 0.0000 pp |
+| Annualized volatility | 9.2426% | 9.3022% | +0.0596 pp |
+| Total eligible Treasury reserve | 3.0000% | 10.0000% | +7.0000 pp |
+| Optimization status | Verified | Verified | |
+| Active mandate verdict | PASS | PASS | |
+| Original 6.5% return / 3% reserve mandate verdict | PASS | PASS | |
 
-**Investment-grade bond allocation:** Pending
-
-**Global equity allocation:** Pending
-
-**Expected annual return:** Pending
-
-**Annualized portfolio volatility:** Pending
-
-**Total eligible Treasury reserve:** Pending
-
-**Optimization status:** Pending
-
-**Mandate compliance:** Pending
+Both portfolios passed the implemented checks for finite weights, full investment, long-only bounds, expected return, and the applicable Treasury reserve. Changes are in percentage points and were calculated before rounding.
 
 ### 7. Prediction Versus Actual Results
 
-To be completed after the changed-input experiment.
+The changed portfolio remained feasible and annual volatility increased by 0.0596 percentage points, consistent with the prediction. The original reserve was below the new 10% floor, so the conditional prediction of a higher Treasury allocation applied. The full 7 percentage point increase went to the Treasury 10-year note.
 
-The comparison will evaluate whether the predicted direction of portfolio-weight changes, volatility response, and feasibility matched the observed results.
-
-Any differences will be explained using the optimization constraints, expected-return assumptions, and covariance structure.
+Global equity rose 1.6333 percentage points and investment-grade bonds fell 8.6333 percentage points. Expected return stayed at the 6.5% floor. The higher modeled equity return offset the return impact of shifting weight into the lower-return Treasury note. The prediction did not specify which Treasury sleeve would receive the increase or the magnitude of the weight and volatility changes.
 
 ### 8. Investment Committee Implications
 
