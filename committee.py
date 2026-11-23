@@ -20,8 +20,18 @@ def recommend(baseline, original_failures, signal_status, stress_rows, instabili
         hard_stops.append("Baseline fails the original mandate: " + "; ".join(original_failures))
     if signal_status == "Integrity failure":
         hard_stops.append("Point-in-time data integrity failed.")
-    if any(row["Optimization"] != "Verified" for row in stress_rows):
-        hard_stops.append("At least one stress scenario did not produce verified weights.")
+    stress_failures = {
+        "Infeasible": "Economically infeasible stress constraints",
+        "Solver failed": "Stress solver failed",
+        "Constraint violation": "Stress solver returned weights that breached constraints",
+    }
+    for status in dict.fromkeys(row["Optimization"] for row in stress_rows):
+        if status == "Verified":
+            continue
+        explanation = stress_failures.get(status, f"Unverified stress results ({status})")
+        scenarios = [row["Scenario"] for row in stress_rows if row["Optimization"] == status]
+        if scenarios:
+            hard_stops.append(f"{explanation}: {', '.join(scenarios)}.")
     hard_stops.extend(instability)
 
     missing = []
@@ -31,10 +41,13 @@ def recommend(baseline, original_failures, signal_status, stress_rows, instabili
         missing.append("Required live return, volatility and correlation inputs are unverified.")
     if not window_reviewed:
         missing.append("Historical estimation-window sensitivity is unavailable.")
-    if not stress_rows:
-        missing.append("Run the full stress suite before reviewing a live allocation.")
     if not benchmark_validated:
         missing.append("Holdout results against the benchmark require validation.")
+    if not stress_rows:
+        return Decision(
+            "Assessment Pending", "0%",
+            ("Stress assessment has not run for the active inputs.", *hard_stops, *missing),
+        )
     if hard_stops:
         return Decision("REJECT", "0%", tuple(hard_stops + missing))
     if missing:

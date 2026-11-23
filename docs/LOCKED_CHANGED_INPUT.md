@@ -4,7 +4,7 @@
 **Student:** Zachary Alvin  
 **GitHub Repository:** https://github.com/zachalvin14-design/Meridian-Portfolio-Analytics  
 **Experiment:** Treasury Reserve Constraint Sensitivity  
-**Status:** AI-assisted prediction prepared; experiment results pending
+**Status:** AI-assisted prediction and experiment results published
 
 ### 1. Purpose
 
@@ -77,7 +77,7 @@ The primary expectation is that the revised portfolio will remain feasible, whil
 
 **Student responsible for reviewing and approving the prediction:** Zachary Alvin
 
-**Prediction commit SHA:** To be recorded after committing to GitHub.
+**Prediction commit SHA:** `484c36ddc85147c15130136491c730ab3d731486` (verified before the designated run).
 
 **Prior exposure disclosure:**
 

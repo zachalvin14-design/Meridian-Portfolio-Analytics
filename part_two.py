@@ -67,10 +67,26 @@ def signal_card():
     return signal
 
 
-def stress_dashboard(returns, volatility, correlation, target, reserve, baseline, current, assets, value):
-    st.header("7. Stress Testing")
+@st.cache_data(show_spinner=False)
+def assess_stress(returns, volatility, correlation, target, reserve, baseline, current, assets, value):
+    rows = run_scenarios(
+        scenarios(returns, volatility, correlation, target, reserve),
+        baseline, returns, correlation * volatility[:, None] * volatility[None, :],
+        current, assets, value,
+    )
+    return rows, instability_reasons(rows)
+
+
+def stress_dashboard(rows, assets):
+    st.header("8. Stress Testing")
+    if not rows:
+        st.info("Stress assessment has not run for the active inputs.")
+        return
+    if not st.toggle("Show stress scenario details", value=True):
+        st.caption("The committee decision still uses the complete stress assessment.")
+        return
     st.caption(
-        "The original allocation is the optimized portfolio for the active sidebar settings. "
+        "Changes and allocation turnover use the optimized portfolio for the active sidebar settings as the baseline. "
         "Original mandate compliance always uses a 6.5% return target and a 3% Treasury floor, "
         "evaluated with each scenario's return estimates after any modeled first-year trading cost."
     )
@@ -85,39 +101,55 @@ def stress_dashboard(returns, volatility, correlation, target, reserve, baseline
         "asset universe and unverified historical adjustment vintages. A dated, source-verified "
         "return history mapped to these four Lab 13 sleeves is required."
     )
-    if not st.toggle("Run all stress scenarios", value=True):
-        return [], []
-
-    rows = run_scenarios(
-        scenarios(returns, volatility, correlation, target, reserve),
-        baseline, returns, correlation * volatility[:, None] * volatility[None, :],
-        current, assets, value,
-    )
     frame = pd.DataFrame(rows)
-    percent = [
-        "Scenario target", "Scenario reserve floor", "Expected return", "Annual volatility",
-        "First-year net return", "Treasury reserve", "Trade turnover",
-        "Turnover vs. original allocation", "Expected return change", "Annual volatility change",
-        *assets, *(f"Δ {asset}" for asset in assets),
-    ]
     groups = list(frame["Group"].unique())
     shown_groups = st.multiselect("Scenario groups", groups, default=groups)
     visible = frame.loc[frame["Group"].isin(shown_groups)]
-    formats = {name: "{:.2%}" for name in percent if name in frame}
-    if "First-year cost ($)" in frame:
+    headings = {
+        "Expected return": "Gross expected return",
+        "Scenario verdict": "Scenario mandate (gross)",
+        "Original mandate verdict": "Original mandate (first-year net)",
+        "Trade turnover": "Trading turnover vs. benchmark",
+        "Turnover vs. original allocation": "Turnover vs. active baseline",
+    }
+    details = visible.rename(columns=headings).copy()
+    changes = ["Expected return change", "Annual volatility change", *(f"Δ {asset}" for asset in assets)]
+    for column in changes:
+        if column in details:
+            details[f"{column} (pp)"] = details.pop(column) * 100
+    percent = [
+        "Scenario target", "Scenario reserve floor", "Gross expected return", "Annual volatility",
+        "First-year net return", "Treasury reserve", "Trading turnover vs. benchmark",
+        "Turnover vs. active baseline", *assets,
+    ]
+    formats = {name: "{:.2%}" for name in percent if name in details}
+    formats.update({f"{name} (pp)": "{:+.2f}" for name in changes if f"{name} (pp)" in details})
+    if "First-year cost ($)" in details:
         formats["First-year cost ($)"] = "${:,.2f}"
-    st.dataframe(visible.style.format(formats, na_rep="—"), hide_index=True, width="stretch")
 
-    st.subheader("Largest changes from the original allocation")
-    if baseline is None:
-        st.write("Change metrics are unavailable because the baseline did not produce verified weights.")
+    overview = [
+        "Scenario", "Optimization", "Gross expected return", "Annual volatility",
+        "Treasury reserve", "Scenario mandate (gross)", "Original mandate (first-year net)",
+    ]
+    overview = [name for name in overview if name in details]
+    st.dataframe(
+        details[overview].style.format({name: formats[name] for name in overview if name in formats}, na_rep="—"),
+        hide_index=True, width="stretch",
+    )
+    with st.expander("Full scenario table, including weights, costs, and mandate reasons"):
+        st.dataframe(details.style.format(formats, na_rep="—"), hide_index=True, width="stretch")
+
+    st.subheader("Largest changes from the active baseline")
+    turnover_field = "Turnover vs. original allocation"
+    if turnover_field not in frame or frame[turnover_field].isna().all():
+        st.write("No verified baseline and scenario weights are available for comparison.")
     else:
-        for metric in ("Turnover vs. original allocation", "Expected return change", "Annual volatility change"):
-            if metric in frame and frame[metric].notna().any():
-                values = frame[metric].abs()
-                peak = values.max()
-                labels = frame.loc[(values - peak).abs() <= 1e-8, "Scenario"].tolist()
-                st.write(f"**{metric}** · {peak:.2%} absolute · {', '.join(labels)}")
+        for metric in (turnover_field, "Expected return change", "Annual volatility change"):
+            values = frame[metric].abs()
+            peak = values.max()
+            labels = frame.loc[(values - peak).abs() <= 1e-8, "Scenario"].tolist()
+            size = f"{peak:.2%}" if metric == turnover_field else f"{peak * 100:.2f} pp"
+            st.write(f"**{headings.get(metric, metric)}** · {size} absolute · {', '.join(labels)}")
     if "Expected return" in visible:
         modeled = visible.dropna(subset=["Expected return"])
         if not modeled.empty:
@@ -133,32 +165,38 @@ def stress_dashboard(returns, volatility, correlation, target, reserve, baseline
             allocation.update_layout(yaxis_tickformat=".0%")
             st.plotly_chart(allocation)
 
-    return rows, instability_reasons(rows)
 
-
-def committee_dashboard(baseline, returns, signal, rows, instability):
-    st.header("8. Investment Committee Recommendation")
+def committee_dashboard(baseline, returns, signal, rows, instability, target, reserve):
+    st.header("1. Investment Committee Recommendation")
     failures = (
         mandate_failures(baseline.weights, returns, ORIGINAL_TARGET, ORIGINAL_RESERVE)
         if baseline.weights is not None else []
     )
     decision = recommend(baseline, failures, signal.status, rows, instability)
     st.subheader(f"Current decision · {decision.action}")
-    st.metric("Proposed live allocation range", decision.allocation_range)
+    allocation, return_floor, reserve_floor = st.columns(3)
+    allocation.metric("Proposed live allocation range", decision.allocation_range)
+    return_floor.metric("Active gross return floor", f"{target:.1%}")
+    reserve_floor.metric("Active Treasury reserve floor", f"{reserve:.0%}")
+    st.write(f"**Primary reason** · {decision.reasons[0]}")
     if decision.allocation_range == "0%":
         st.warning("Process stop. Do not initiate or rebalance a live allocation. Model outputs are for review.")
+    verified_count = sum(row["Optimization"] == "Verified" for row in rows)
+    stress_status = f"{verified_count} of {len(rows)} verified" if rows else "Pending"
     st.write(
         f"Baseline optimization: {baseline.status}. "
-        f"Signal: {signal.status}. Stress scenarios with verified weights: "
-        f"{sum(row['Optimization'] == 'Verified' for row in rows)} of {len(rows)}."
+        f"Signal: {signal.status}. Stress assessment: {stress_status}."
     )
-    for reason in decision.reasons:
-        st.write(f"• {reason}")
+    if len(decision.reasons) > 1:
+        with st.expander("Additional decision evidence"):
+            for reason in decision.reasons[1:]:
+                st.write(f"• {reason}")
 
     with st.expander("Decision rules and monitoring triggers"):
         st.markdown(f"""
-- **REJECT** when baseline or scenario optimization fails, verified weights breach the applicable constraints, the baseline breaches the original mandate, timing integrity fails, or stress results are materially unstable.
-- **PILOT** means educational validation only while required data, dated window tests, full stress results, or benchmark holdout evidence are missing.
+- **Assessment Pending** until the stress suite has been assessed for the active inputs. Live allocation stays at 0%.
+- **REJECT** for economic infeasibility, solver failure, failed mandate checks, point-in-time integrity failure, or material stress instability.
+- **PILOT** means educational validation only while required data, dated window tests, or benchmark holdout evidence are missing after stress assessment.
 - **ADOPT** after validation gates clear. A committee-authorized cap is required to fund the strategy. An approved funded strategy can continue under ADOPT while within its cap and drift tolerance.
 - **ALLOCATE** for initial funding after validation and committee approval with an explicit size cap.
 - **REBALANCE** for an approved funded strategy when weight drift reaches 5 pp or funding exceeds its approved cap.

@@ -1,4 +1,4 @@
-AI Use: OpenAI ChatGPT and Codex assisted with coding, debugging, testing, and documentation. I independently review the analysis and retain responsibility for the investment decision.
+AI Use: OpenAI ChatGPT and Codex assisted with coding, debugging, testing, and documentation. I retain responsibility for independently reviewing the analysis and for the investment decision. Independent student verification is pending.
 
 Educational Disclaimer: This project is for educational purposes only and is not investment advice.
 
@@ -25,7 +25,11 @@ Open the local URL printed by Streamlit. The app requires no API credentials or 
 
 ## Investment mandate
 
-Minimize modeled annual volatility subject to long-only weights, full investment, a minimum modeled annual expected return of 6.5%, and at least 3% in Treasury bills and Treasury 10-year notes combined. The sidebar changes the optimization target and reserve floor. Stress results separately report compliance with the fixed original 6.5% and 3% mandate. The default Sharpe input is a 4.5% risk-free rate and the default dollar allocation scale is $100 million.
+Minimize modeled annual volatility subject to long-only weights, full investment, a minimum modeled annual expected return of 6.5%, and at least 3% in Treasury bills and Treasury 10-year notes combined. The sidebar changes the optimization target and reserve floor. The comparison table checks the active gross mandate. Stress results also test the original 6.5% return and 3% reserve floors using first-year returns after modeled costs. The default Sharpe input is a 4.5% risk-free rate and the default dollar allocation scale is $100 million.
+
+## Dashboard workflow
+
+The committee summary at the top shows the decision, live allocation, active floors, and primary reason. The full stress assessment informs the decision for the active inputs, including when its table and charts are hidden. An unperformed assessment displays **Assessment Pending** and **0%** live allocation. Use the compact stress table for status and mandate verdicts, and expand the full table for costs, weights, and percentage-point changes.
 
 ## Inputs and limitations
 
@@ -42,7 +46,7 @@ Run the complete suite from the repository root.
 .venv/bin/python -m pytest -q
 ```
 
-The full suite passed all 29 tests in a fresh clone of the published results commit. See [validation and AI use](docs/validation-and-ai-use.md) for the evidence and [the decision memo](docs/decision-memo.md) for the stop decision.
+The published results commit passed 29 tests in a fresh clone. The expanded suite includes Streamlit AppTest coverage for the default dashboard, hidden stress details, and pending assessment. See [validation and AI use](docs/validation-and-ai-use.md) for the evidence and [the decision memo](docs/decision-memo.md) for the stop decision.
 
 ## Submission records
 

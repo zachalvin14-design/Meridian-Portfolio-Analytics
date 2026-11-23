@@ -120,5 +120,8 @@ def instability_reasons(rows):
     for field, limit in thresholds:
         exceeded = [row["Scenario"] for row in rows if abs(row.get(field, np.nan)) > limit + 1e-8]
         if exceeded:
-            reasons.append(f"{field} exceeds {limit:.1%} in {', '.join(exceeded)}.")
+            if field.startswith("Turnover"):
+                reasons.append(f"Turnover vs. active baseline exceeds {limit:.1%} in {', '.join(exceeded)}.")
+            else:
+                reasons.append(f"Absolute {field.lower()} exceeds {limit * 100:.1f} pp in {', '.join(exceeded)}.")
     return reasons

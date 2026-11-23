@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import analytics
-from part_two import committee_dashboard, signal_card, stress_dashboard
+from part_two import assess_stress, committee_dashboard, signal_card, stress_dashboard
 
 st.set_page_config(
     page_title="Meridian Portfolio Analytics",
@@ -50,10 +50,6 @@ correlation_matrix = np.array([
 ])
 covariance_matrix = np.outer(asset_volatility, asset_volatility) * correlation_matrix
 
-signal = signal_card()
-modeled_returns = expected_returns.copy()
-modeled_returns[assets.index("Global Equity")] += signal.adjustment
-
 st.sidebar.title("Investment Mandate")
 st.sidebar.markdown(
     "Adjust portfolio requirements and observe how the optimized allocation changes."
@@ -80,6 +76,11 @@ st.sidebar.write("Fully Invested: 100%")
 st.sidebar.write("Short Selling: Not Permitted")
 st.sidebar.write(f"Minimum Treasury Reserve: {minimum_reserve:.1%}")
 st.sidebar.write(f"Minimum Expected Return: {target_return:.1%}")
+
+with st.sidebar:
+    signal = signal_card()
+modeled_returns = expected_returns.copy()
+modeled_returns[assets.index("Global Equity")] += signal.adjustment
 
 
 def portfolio_return(weights):
@@ -113,6 +114,13 @@ portfolios = {
 }
 
 baseline = analytics.optimize(modeled_returns, covariance_matrix, target_return, minimum_reserve)
+stress_rows, instability = assess_stress(
+    modeled_returns, asset_volatility, correlation_matrix, target_return,
+    minimum_reserve, baseline.weights, benchmark_weights, assets, portfolio_value,
+)
+committee_dashboard(
+    baseline, modeled_returns, signal, stress_rows, instability, target_return, minimum_reserve,
+)
 if baseline.status == "Infeasible":
     maximum = portfolio_return(analytics.maximum_return_weights(modeled_returns, minimum_reserve))
     st.warning(
@@ -126,7 +134,7 @@ elif baseline.weights is None:
 else:
     portfolios["Optimized Portfolio"] = baseline.weights
 
-st.header("1. Investment Universe")
+st.header("2. Investment Universe")
 universe_df = pd.DataFrame({
     "Asset Class": assets,
     "Lab 13 Expected Annual Return": expected_returns,
@@ -147,7 +155,7 @@ st.caption(
     "These values are not historical market estimates or forward-looking guarantees."
 )
 
-st.header("2. Portfolio Comparison")
+st.header("3. Portfolio Comparison")
 comparison_rows = []
 for name, weights in portfolios.items():
     comparison_rows.append({
@@ -156,7 +164,7 @@ for name, weights in portfolios.items():
         "Annual Volatility": portfolio_volatility(weights),
         "Sharpe Ratio": portfolio_sharpe(weights),
         "Treasury Reserve": analytics.treasury_reserve(weights),
-        "Mandate Verdict": mandate_check(weights),
+        "Active Mandate Verdict (Gross)": mandate_check(weights),
     })
 comparison_df = pd.DataFrame(comparison_rows)
 st.dataframe(
@@ -170,7 +178,7 @@ st.dataframe(
     hide_index=True,
 )
 
-st.header("3. Portfolio Allocations")
+st.header("4. Portfolio Allocations")
 allocation_rows = []
 for name, weights in portfolios.items():
     for asset, weight in zip(assets, weights):
@@ -187,7 +195,7 @@ fig_allocation = px.bar(
 fig_allocation.update_layout(yaxis_tickformat=".0%", height=500)
 st.plotly_chart(fig_allocation)
 
-st.header("4. Risk vs. Expected Return")
+st.header("5. Risk vs. Expected Return")
 fig_risk = px.scatter(
     comparison_df,
     x="Annual Volatility",
@@ -200,7 +208,7 @@ fig_risk.update_traces(marker=dict(size=15), textposition="top center")
 fig_risk.update_layout(xaxis_tickformat=".1%", yaxis_tickformat=".1%", height=500)
 st.plotly_chart(fig_risk)
 
-st.header("5. Optimized Portfolio Dashboard")
+st.header("6. Optimized Portfolio Dashboard")
 if "Optimized Portfolio" in portfolios:
     w = portfolios["Optimized Portfolio"]
     col1, col2, col3, col4 = st.columns(4)
@@ -233,7 +241,7 @@ if "Optimized Portfolio" in portfolios:
 else:
     st.warning("No verified feasible optimized portfolio is available under these settings.")
 
-st.header("6. Investment Mandate Compliance")
+st.header("7. Active Mandate Compliance (Gross)")
 for name, weights in portfolios.items():
     verdict = mandate_check(weights)
     if verdict == "PASS":
@@ -245,11 +253,7 @@ st.warning(
     "Meridian mandate compliance requires additional checks."
 )
 
-stress_rows, instability = stress_dashboard(
-    modeled_returns, asset_volatility, correlation_matrix, target_return,
-    minimum_reserve, baseline.weights, benchmark_weights, assets, portfolio_value,
-)
-committee_dashboard(baseline, modeled_returns, signal, stress_rows, instability)
+stress_dashboard(stress_rows, assets)
 
 st.header("9. Export Investment Results")
 st.download_button(

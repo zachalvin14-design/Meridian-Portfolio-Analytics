@@ -4,9 +4,9 @@
 
 | Item | Contents or status |
 | --- | --- |
-| [Application](../app.py) | Streamlit entry point verified from a fresh GitHub clone. |
+| [Application](../app.py) | Published results version verified from a fresh GitHub clone. The updated dashboard puts the committee assessment first and separates it from stress visibility. |
 | Application modules | `analytics.py`, `signal_data.py`, `stress.py`, `committee.py`, and `part_two.py`. |
-| [Automated tests](../tests/) | Complete suite passed: 29 tests in 14.37s. |
+| [Automated tests](../tests/) | Published results commit: 29 passed in 14.37s from a fresh clone. The updated suite adds three Streamlit AppTest checks. See the validation record for both runs. |
 | [README](../README.md) and [requirements](../requirements.txt) | Setup, launch, tests, dependencies, data sources and limitations. |
 | [Decision memo](decision-memo.md) | Committee decision, allocation range, decision rules and monitoring. |
 | [Validation and AI use](validation-and-ai-use.md) | Observed verification, model assumptions, limitations and independent review status. |

@@ -12,9 +12,10 @@
 | Clean-clone full pytest suite | `29 passed in 14.37s` with no deselections or guard. |
 | Clean-clone Streamlit launch | Streamlit 1.50.0 served the root page and health endpoint with HTTP 200. AppTest found zero Python exceptions, four portfolio comparison rows, five Plotly charts, 26 stress scenarios (25 verified and one modeled infeasible), and REJECT with 0% live allocation. See [the clean-clone run](COLD_RUN.md). |
 | Changed-input experiment | Remote prediction SHA verified before the designated run. Both constrained optimizations passed the implemented checks. Results were published separately in `f99651ddddbd6ba44b2326da2c86092a61a5d36b`. See [the locked record](LOCKED_CHANGED_INPUT.md). |
+| Dashboard decision-control update | 32 pytest cases passed in the local course environment, including three Streamlit AppTest cases. The default shows REJECT and 0% with 26 scenarios. Hiding stress details preserves the decision; an unperformed assessment shows Assessment Pending and 0%. Pip reported no broken requirements. |
 | Independent student review | Pending documentation by the student. No independent sign-off is claimed. |
 
-The 29 tests cover return and volatility calculations, valid weight totals and bounds, return and Treasury reserve compliance, infeasibility screening, rejection of invalid solver output, scenario math and separate mandate checks, one-way turnover costs, point-in-time signal selection and impact, and committee decisions.
+The original 29 cases cover return and volatility calculations, valid weight totals and bounds, return and Treasury reserve compliance, infeasibility screening, rejection of invalid solver output, scenario math and separate mandate checks, one-way turnover costs, point-in-time signal selection and impact, and committee decisions.
 
 ## Model and numerical checks
 
