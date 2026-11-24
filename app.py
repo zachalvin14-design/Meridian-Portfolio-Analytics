@@ -63,8 +63,9 @@ minimum_reserve = st.sidebar.slider(
     min_value=0, max_value=30, value=3, step=1, format="%d%%",
 ) / 100
 risk_free_rate = st.sidebar.number_input(
-    "Risk-Free Rate for Sharpe Ratio",
+    "Annual Risk-Free Rate (decimal)",
     min_value=0.0, max_value=0.10, value=0.045, step=0.005, format="%.3f",
+    help="Enter 0.045 for 4.5%. This rate affects the modeled Sharpe ratio only.",
 )
 portfolio_value = st.sidebar.number_input(
     "Portfolio Value ($)",
@@ -177,6 +178,7 @@ st.dataframe(
     width="stretch",
     hide_index=True,
 )
+st.caption(f"Modeled annual Sharpe uses gross expected return and a {risk_free_rate:.2%} annual risk-free rate.")
 
 st.header("4. Portfolio Allocations")
 allocation_rows = []
@@ -191,6 +193,7 @@ fig_allocation = px.bar(
     color="Asset Class",
     title="Asset Allocation by Portfolio",
     barmode="stack",
+    hover_data={"Weight": ":.2%"},
 )
 fig_allocation.update_layout(yaxis_tickformat=".0%", height=500)
 st.plotly_chart(fig_allocation)
@@ -203,6 +206,8 @@ fig_risk = px.scatter(
     color="Portfolio",
     text="Portfolio",
     title="Portfolio Risk-Return Comparison",
+    labels={"Expected Return": "Expected Annual Return"},
+    hover_data={"Annual Volatility": ":.2%", "Expected Return": ":.2%"},
 )
 fig_risk.update_traces(marker=dict(size=15), textposition="top center")
 fig_risk.update_layout(xaxis_tickformat=".1%", yaxis_tickformat=".1%", height=500)
@@ -256,17 +261,20 @@ st.warning(
 stress_dashboard(stress_rows, assets)
 
 st.header("9. Export Investment Results")
+st.caption("CSV returns, volatility, reserves, and weights are decimal fractions. A weight of 0.03 represents 3%.")
 st.download_button(
     label="Download Portfolio Comparison",
     data=comparison_df.to_csv(index=False),
     file_name="portfolio_comparison.csv",
     mime="text/csv",
+    on_click="ignore",
 )
 st.download_button(
     label="Download Portfolio Allocations",
     data=allocation_df.to_csv(index=False),
     file_name="portfolio_allocations.csv",
     mime="text/csv",
+    on_click="ignore",
 )
 st.markdown("---")
 st.caption(

@@ -2,6 +2,10 @@
 
 **Decision: REJECT the current live allocation proposal. Proposed live allocation: 0%.**
 
+The committee is asked to keep live funding at 0% at this review and allow educational validation to continue. Returns and volatility use an annual horizon. Trading costs are assessed once against modeled first-year return.
+
+The baseline construction answers the Edition A question of whether a minimum-volatility portfolio can satisfy the modeled constraints. The Edition B assessment adds stress, point-in-time evidence gates, and a committee decision. Base-case feasibility supports continued analysis. The downside shock and missing live evidence support withholding funding. A separately identifiable Edition A submission is not linked in the manifest.
+
 ## Base case
 
 The Lab 13 model minimizes annual volatility subject to the 6.5% gross expected-return floor, the 3% Treasury reserve floor, full investment, and long-only weights. The default solution holds 3.0% Treasury 10-year notes, 46.3% investment-grade bonds, and 50.7% global equity. Its weighted expected return is `0.030 × 4.3% + 0.463 × 5.0% + 0.507 × 8.0% = 6.50%`. Both the return and reserve floors bind.
@@ -31,7 +35,7 @@ The optimized portfolio achieves lower modeled volatility and has a slightly low
 | ALLOCATE | After evidence gates clear, use an approved limit for initial funding. |
 | REBALANCE | After evidence gates clear, an approved, already funded strategy reaches 5 percentage points of drift or exceeds its funding cap. |
 
-The current rule treats every configured stress scenario as part of the funding gate, including alternative constraint settings. Hiding the scenario details leaves the assessment and decision in effect.
+The prototype funding gate includes optimization status and material changes across every configured scenario. This includes alternative return targets and reserve floors. Those cases test how a different policy would affect the strategy, and an infeasible alternative policy does not establish infeasibility under the original mandate. A scenario's original-mandate verdict is reported for review and is not itself a hard stop in the current rule. The default REJECT already follows from the −2 pp return shock under the original settings. Before live use, the committee should decide which scenarios belong in the funding gate. Hiding the scenario details leaves the assessment and decision in effect.
 
 ## Monitoring and return to committee
 

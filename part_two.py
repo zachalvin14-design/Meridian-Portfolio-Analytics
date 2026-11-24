@@ -31,6 +31,7 @@ def signal_card():
             "in YYYY-MM-DD, publication and availability timestamps with UTC offsets, "
             "and evidence links or archive identifiers for each historical vintage."
         )
+        st.caption("Upload only data you have permission to share with the server running this app. Omit credentials and personal information.")
         confirmed = st.checkbox(
             "I checked the historical values, publication and availability against the cited sources",
             key=f"signal_verification_{fingerprint(uploaded.getvalue()) if uploaded else 'missing'}",
@@ -96,6 +97,7 @@ def stress_dashboard(rows, assets):
         "Transaction-cost tests keep the optimizer's gross target and charge a one-time cost "
         "on one-way turnover from the app's 40% investment-grade bond / 60% global equity benchmark."
     )
+    st.caption("Alternative mandate settings test policy sensitivity. The prototype includes them in its funding gate.")
     st.info(
         "Estimation-window test unavailable. The course's ETF snapshot has a different "
         "asset universe and unverified historical adjustment vintages. A dated, source-verified "
@@ -155,13 +157,20 @@ def stress_dashboard(rows, assets):
         if not modeled.empty:
             comparison = px.scatter(
                 modeled, x="Annual volatility", y="Expected return", color="Group",
-                hover_name="Scenario", hover_data=["First-year net return", "Treasury reserve"],
+                hover_name="Scenario", hover_data={
+                    "Annual volatility": ":.2%", "Expected return": ":.2%",
+                    "First-year net return": ":.2%", "Treasury reserve": ":.2%",
+                },
+                labels={"Expected return": "Gross expected annual return"},
                 title="Scenario risk and expected return",
             )
             comparison.update_layout(xaxis_tickformat=".1%", yaxis_tickformat=".1%")
             st.plotly_chart(comparison)
             weights = modeled.melt(id_vars=["Scenario"], value_vars=assets, var_name="Asset", value_name="Weight")
-            allocation = px.bar(weights, x="Scenario", y="Weight", color="Asset", title="Scenario allocations")
+            allocation = px.bar(
+                weights, x="Scenario", y="Weight", color="Asset", title="Scenario allocations",
+                hover_data={"Weight": ":.2%"},
+            )
             allocation.update_layout(yaxis_tickformat=".0%")
             st.plotly_chart(allocation)
 
@@ -195,11 +204,11 @@ def committee_dashboard(baseline, returns, signal, rows, instability, target, re
     with st.expander("Decision rules and monitoring triggers"):
         st.markdown(f"""
 - **Assessment Pending** until the stress suite has been assessed for the active inputs. Live allocation stays at 0%.
-- **REJECT** for economic infeasibility, solver failure, failed mandate checks, point-in-time integrity failure, or material stress instability.
+- **REJECT** for an infeasible or unverified baseline or stress optimization, a baseline breach of the original mandate, point-in-time integrity failure, or material stress instability. Scenario-level original mandate verdicts are reported separately.
 - **PILOT** means educational validation only while required data, dated window tests, or benchmark holdout evidence are missing after stress assessment.
 - **ADOPT** after validation gates clear. A committee-authorized cap is required to fund the strategy. An approved funded strategy can continue under ADOPT while within its cap and drift tolerance.
 - **ALLOCATE** for initial funding after validation and committee approval with an explicit size cap.
 - **REBALANCE** for an approved funded strategy when weight drift reaches 5 pp or funding exceeds its approved cap.
-- **Review triggers** include return below 6.5%, reserve below 3%, weight restrictions breached, unavailable source vintages, or failed optimization. Reassess after three monthly reviews below benchmark rolling Sharpe.
+- **Review triggers** include return below 6.5%, reserve below 3%, weight restrictions breached, unavailable source vintages, or failed optimization. The proposed rolling-Sharpe trigger requires verified benchmark data and committee agreement on the lookback and review owner.
 - **Material stress thresholds** are more than {TURNOVER_LIMIT:.0%} one-way allocation change, {RETURN_CHANGE_LIMIT * 100:.1f} pp expected-return change, or {VOLATILITY_CHANGE_LIMIT * 100:.1f} pp volatility change. These are prototype review thresholds.
 """)
