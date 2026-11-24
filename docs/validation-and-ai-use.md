@@ -13,9 +13,22 @@
 | Clean-clone Streamlit launch | Streamlit 1.50.0 served the root page and health endpoint with HTTP 200. AppTest found zero Python exceptions, four portfolio comparison rows, five Plotly charts, 26 stress scenarios (25 verified and one modeled infeasible), and REJECT with 0% live allocation. See [the clean-clone run](COLD_RUN.md). |
 | Changed-input experiment | Remote prediction SHA verified before the designated run. Both constrained optimizations passed the implemented checks. Results were published separately in `f99651ddddbd6ba44b2326da2c86092a61a5d36b`. See [the locked record](LOCKED_CHANGED_INPUT.md). |
 | Dashboard decision-control update | 32 pytest cases passed in the local course environment, including three Streamlit AppTest cases. The default shows REJECT and 0% with 26 scenarios. Hiding stress details preserves the decision; an unperformed assessment shows Assessment Pending and 0%. Pip reported no broken requirements. |
-| Independent student review | Pending documentation by the student. No independent sign-off is claimed. |
+| Personal student dashboard review | Completed November 23, 2026. See the browser observations below. No independent sign-off is claimed. |
 
 The original 29 cases cover return and volatility calculations, valid weight totals and bounds, return and Treasury reserve compliance, infeasibility screening, rejection of invalid solver output, scenario math and separate mandate checks, one-way turnover costs, point-in-time signal selection and impact, and committee decisions.
+
+## Personal Streamlit dashboard review
+
+On November 23, 2026, I launched the Streamlit dashboard in my Mac browser at `http://localhost:8501/` and personally reviewed the following behavior.
+
+1. The default optimized portfolio displayed a 6.50% expected return, 9.24% volatility, a 0.216 Sharpe ratio, and a 3.00% Treasury reserve.
+2. The investment committee displayed REJECT and a 0% proposed live allocation. The dashboard identified the −2 percentage-point return shock as the primary reason.
+3. The stress scenario table and charts displayed. Hiding stress scenario details preserved REJECT and the 0% proposed live allocation.
+4. I raised the Treasury reserve setting from 3% to 10% and kept the return target at 6.5%. The optimized portfolio displayed 9.30% volatility, 10.00% Treasury reserve, 37.67% investment-grade bonds, and 52.33% global equity.
+5. I restored the Treasury reserve setting to 3% and observed the original optimized results return.
+6. I downloaded `portfolio_comparison.csv` and `portfolio_allocations.csv` from the dashboard.
+
+Subsequent AI-assisted inspection found the expected portfolio comparison data in `portfolio_comparison.csv` and the expected allocation data in `portfolio_allocations.csv`. The automated pytest and Streamlit checks are recorded separately above.
 
 ## Model and numerical checks
 
@@ -40,4 +53,4 @@ Scenario optimization uses gross return. Original mandate checks use each scenar
 
 ## AI assistance and independent review
 
-ChatGPT and Codex assisted with coding, debugging, tests, and documentation. AI-assisted verification includes the test and Streamlit runs above. The published prediction was AI-assisted, and the historical record discloses that prior Part 2 testing executed the same scenario. The independently authored AI-off prediction requirement remains unmet. The student should record their own completed checks and evidence here, including which outputs they reproduced, what inputs and commit they used, and any discrepancies. Leave sign-off pending until those checks occur.
+ChatGPT and Codex assisted with coding, debugging, tests, and documentation. AI-assisted verification includes the automated test and Streamlit runs above and the subsequent inspection of the downloaded CSV files. The published prediction was AI-assisted, and the historical record discloses that prior Part 2 testing executed the same scenario. The independently authored AI-off prediction requirement remains unmet. The student should record their own completed checks and evidence here, including which outputs they reproduced, what inputs and commit they used, and any discrepancies. Independent sign-off remains pending.
